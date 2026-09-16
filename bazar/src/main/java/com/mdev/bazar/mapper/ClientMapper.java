@@ -10,11 +10,11 @@ import java.util.List;
 
 public class ClientMapper {
     public static Client toEntity(ClientCreateRequestDTO dto){
-        Client cli = new Client();
-        cli.setName(dto.name());
-        cli.setLastName(dto.lastName());
-        cli.setDni(dto.dni());
-        return cli;
+        Client client = new Client();
+        client.setName(dto.name());
+        client.setLastName(dto.lastName());
+        client.setDni(dto.dni());
+        return client;
     }
 
     public static ClientResponseDTO toResponseDTO(Client client){
@@ -27,16 +27,16 @@ public class ClientMapper {
     }
 
     public static List<ClientResponseDTO> toResponseDTOList(List<Client> clientList){
-        List<ClientResponseDTO> responseList = new ArrayList<>();
+        List<ClientResponseDTO> dtoList = new ArrayList<>();
         for(Client cli : clientList){
-            responseList.add(toResponseDTO(cli));
+            dtoList.add(toResponseDTO(cli));
         }
-        return responseList;
+        return dtoList;
     }
 
-    public static void applyClientUpdate(Client cli, ClientUpdateRequestDTO dto){
-        if(dto.name() != null) cli.setName(dto.name());
-        if(dto.lastName() != null) cli.setLastName(dto.lastName());
-        if(dto.dni() != null) cli.setDni(dto.dni());
+    public static void applyClientUpdate(Client client, ClientUpdateRequestDTO dto){
+        if(dto.name() != null) client.setName(dto.name());
+        if(dto.lastName() != null) client.setLastName(dto.lastName());
+        if(dto.dni() != null) client.setDni(dto.dni());
     }
 }

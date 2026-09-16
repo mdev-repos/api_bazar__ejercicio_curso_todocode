@@ -25,8 +25,8 @@ public class Sale {
 
     private Double amount;
 
-    @OneToMany
-    private List<Product> products;
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SaleItem> saleItems;
 
     @OneToOne
     @JoinColumn(name = "client_id")
