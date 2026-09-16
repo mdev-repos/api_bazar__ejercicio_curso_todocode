@@ -8,9 +8,10 @@ import com.mdev.bazar.model.Client;
 import java.util.List;
 
 public interface IClientService {
-    public ClientResponseDTO createClient(ClientCreateRequestDTO request);
-    public ClientResponseDTO getClientById(Long id);
-    public List<ClientResponseDTO> getAllClients();
-    public ClientResponseDTO updateClient(Long id, ClientUpdateRequestDTO update);
-    public void deleteClient(Long id);
+    ClientResponseDTO createClient(ClientCreateRequestDTO dto);
+    ClientResponseDTO getClientById(Long id);
+    List<ClientResponseDTO> getAllClients();
+    ClientResponseDTO updateClient(Long id, ClientUpdateRequestDTO dto);
+    void deleteClient(Long id);
+    Client getClient(Long id);
 }

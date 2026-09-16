@@ -21,8 +21,8 @@ public class ClientController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ClientResponseDTO> createClient(@Valid @RequestBody ClientCreateRequestDTO request){
-        ClientResponseDTO created = clientServ.createClient(request);
+    public ResponseEntity<ClientResponseDTO> createClient(@Valid @RequestBody ClientCreateRequestDTO dto){
+        ClientResponseDTO created = clientServ.createClient(dto);
         URI location = URI.create("/clients/" + created.clientId());
         return ResponseEntity.created(location).body(created);
     }
@@ -43,8 +43,8 @@ public class ClientController {
 
     @PatchMapping("/update/{id}")
     public ResponseEntity<ClientResponseDTO> updateClient(@PathVariable Long id,
-                                                          @Valid @RequestBody ClientUpdateRequestDTO request){
-        ClientResponseDTO updated = clientServ.updateClient(id, request);
+                                                          @Valid @RequestBody ClientUpdateRequestDTO dto){
+        ClientResponseDTO updated = clientServ.updateClient(id, dto);
         if(updated == null)  return ResponseEntity.notFound().build();
 
         return ResponseEntity.ok(updated);
