@@ -58,5 +58,4 @@ public class ProductController {
         List<ProductResponseDTO> lowStockList = productServ.getLowStockProducts();
         return ResponseEntity.ok(lowStockList);
     }
-
 }

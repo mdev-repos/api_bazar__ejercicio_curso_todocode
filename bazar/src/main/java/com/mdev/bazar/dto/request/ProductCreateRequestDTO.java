@@ -8,5 +8,4 @@ public record ProductCreateRequestDTO(
         @NotBlank String brand,
         @PositiveOrZero Double price,
         @PositiveOrZero Double stock
-) {
-}
+) {}

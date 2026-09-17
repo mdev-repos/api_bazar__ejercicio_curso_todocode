@@ -1,121 +1,330 @@
-# api_bazar__ejercicio_curso_todocode
-Ejercicio practico  | API con Springboot
+# 🧺 Bazar API
 
-### TP Integrador Final
+API REST para la gestión de ventas de un bazar — productos, clientes y ventas, con
+consultas específicas de negocio (bajo stock, productos por venta, monto por fecha,
+venta más alta). Construida con **Spring Boot** siguiendo una arquitectura en capas
+(Controller → Service → Repository) con separación estricta entre entidades de
+persistencia y contrato de API mediante **DTOs**.
 
-#### Objetivo
-El objetivo de este proyecto integrador final es el de validar los conocimientos prácticos y
-técnicos referidos al desarrollo de APIs en el lenguaje de programación Java mediante Spring
-Boot para el curso “Desarrollo de APIs en Java con Spring Boot” de la TodoCode Academy.
+Proyecto ancla del roadmap: da un salto de complejidad respecto a
+[Ferretería](../api_ferreteria__prueba_tecnica_todocode) (una sola entidad) — acá son
+**tres entidades relacionadas entre sí** (Producto, Cliente, Venta), más una cuarta
+(`SaleItem`) agregada por decisión propia de modelado para representar correctamente
+la relación muchos-a-muchos con datos propios (cantidad, precio unitario, subtotal).
 
-#### Escenario
-Un bazar ha incrementado en gran medida sus ventas. Dado esto y que le está siendo casi
-imposible registrar las mismas y manejar el stock de sus productos de forma manual, necesita
-del desarrollo de una aplicación que le permita realizar esta tarea.
+![Java](https://img.shields.io/badge/Java-25-orange?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4-brightgreen?logo=springboot&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-build-C71A36?logo=apachemaven&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-prod%20(pendiente)-336791?logo=postgresql&logoColor=white)
+![Status](https://img.shields.io/badge/status-en%20desarrollo-yellow)
 
-La dueña del bazar manifiesta que todas las operaciones que tenga la aplicación se deben
-poder realizar mediante dos tipos de clientes http distintos:
+**🖥️ Front (GitHub Pages)**: https://mdev-repos.github.io/front_bazar__curso_todocode/
+_(el backend todavía corre solo en local — hasta que se complete el deploy, el front
+público va a mostrar error de conexión; ver [Next To-Do](#next-to-do))_
 
-- Una aplicación web, cuyo frontend desarrollará un programador amigo (no será parte
-de nuestra tarea como desarrolladores backend).
-- Una aplicación Mobile que será implementada a futuro.
+---
 
-Cada una de estas app representa a los dispositivos que ella y sus empleados manejan
-actualmente. En síntesis: una computadora y varios celulares.
-Dada esta situación particular y de que necesita utilizar el mismo backend para ambas
-opciones, solicita el desarrollo de una API.
+## Índice
 
-#### Modelado
-A partir del relevamiento que ha llevado a cabo un analista funcional, se detectaron que serán
-necesarias las siguientes clases:
-- Producto
-- Venta
-- Cliente
+- [Contexto del ejercicio](#contexto-del-ejercicio)
+- [Stack técnico](#stack-técnico)
+- [Arquitectura](#arquitectura)
+- [Modelo de datos](#modelo-de-datos)
+- [Endpoints](#endpoints)
+- [Cómo correrlo en local](#cómo-correrlo-en-local)
+- [Perfiles y bases de datos](#perfiles-y-bases-de-datos)
+- [Configuración](#configuración)
+- [Proyecto relacionado](#proyecto-relacionado)
+- [Next To-Do](#next-to-do)
+- [Autor](#autor)
 
-En donde cada venta posee una lista de productos y uno y solo un cliente asociado. Además
-de eso, cada clase debe tener los siguientes atributos:
+---
 
-- Producto
-    - Long codigo_producto
-    - String nombre
-    - String marca
-    - Double costo
-    - Double cantidad_disponible
+## Contexto del ejercicio
 
-- Venta
-    - Long codigo_venta
-    - LocalDate fecha_venta
-    - Double total
-    - List<Producto> listaProductos
-    - Cliente unCliente
+> TP Integrador Final — TodoCode Academy
 
-- Cliente
-    - Long id_cliente
-    - String nombre
-    - String apellido
-    - String dni
+Un bazar necesita una API REST que le permita registrar sus ventas y administrar el
+stock de sus productos, para ser consumida tanto desde una futura app web como desde
+una futura app mobile. El modelado requiere tres clases relacionadas (`Producto`,
+`Cliente`, `Venta`, donde cada venta tiene una lista de productos y un único cliente
+asociado), un CRUD completo para cada una, y cuatro consultas específicas de negocio
+(bajo stock, productos de una venta puntual, monto total vendido en una fecha, y datos
+de la venta con el monto más alto).
 
-#### Requerimientos
-A partir del relevamiento realizado respecto al modelado, la dueña del bazar especificó que
-tiene los siguientes requerimientos:
-1) Poder realizar un CRUD completo de productos
-    - Métodos HTTP: GET, POST, DELETE, PUT
-    - Endpoints:
-        - Creación: localhost:8080/productos/crear
-        - Lista completa de productos: localhost:8080/productos
-        - Traer un producto en particular: localhost:8080/productos/{codigo_producto}
-        - Eliminación: localhost:8080/productos/eliminar/{codigo_producto}
-        - Edición: localhost:8080/productos/editar/{codigo_producto}
+## Stack técnico
 
-2) Poder realizar un CRUD completo de clientes
-    - Métodos HTTP: GET, POST, DELETE, PUT
-    - Endpoints:
-        - Creación: localhost:8080/clientes/crear
-        - Lista completa de clientes: localhost:8080/clientes
-        - Traer un cliente en particular: localhost:8080/clientes/{id_cliente}
-        - Eliminación: localhost:8080/clientes/eliminar/{id_cliente}
-        - Edición: localhost:8080/clientes/editar/{id_cliente}
+| Categoría | Tecnología |
+|---|---|
+| Lenguaje | Java 25 |
+| Framework | Spring Boot 4 (Spring Web, Spring Data JPA) |
+| ORM | Hibernate |
+| Base de datos | MySQL (desarrollo) · PostgreSQL (preparado para producción, deploy pendiente) |
+| Validación | Jakarta Bean Validation |
+| Build | Maven |
+| Reducción de boilerplate | Lombok |
 
-3) Poder realizar un CRUD completo de ventas
-    - Métodos HTTP: GET, POST, DELETE, PUT
-    - Endpoints:
-        - Creación: localhost:8080/ventas/crear
-        - Lista completa de ventas realizadas: localhost:8080/ventas
-        - Traer una venta en particular: localhost:8080/ventas/{codigo_venta}
-        - Eliminación: localhost:8080/clientes/eliminar/{codigo_venta}
-        - Edición: localhost:8080/clientes/editar/{codigo_venta}
+## Arquitectura
 
-- Nota: No es necesario para este requerimiento actualizar el stock de un producto (descontar) al realizar una venta, ni tampoco controlar si cuenta con la cantidad disponible para vender; sin embargo, se considerará como “plus” o extra (para el bonus del punto 8) si se desea implementar la funcionalidad.
+Arquitectura en capas, con **DTOs (`record`) + Mapper** como frontera entre el
+contrato público de la API y el modelo de persistencia — las entidades JPA nunca se
+exponen directamente en request ni response.
 
-4) Obtener todos los productos cuya cantidad_disponible sea menor a 5
-    - Métodos HTTP: GET
-    - Endpoint:
-        - localhost:8080/productos/falta_stock
+```
+Cliente (JSON)
+   │
+   ▼
+Controller        → recibe/devuelve DTOs, gestiona status codes (ResponseEntity)
+   │
+   ▼
+Service            → lógica de negocio, orquesta Mapper + Repository (y otros Services)
+   │
+   ├─▶ Mapper       → traduce Entity ⇄ DTO
+   │
+   ▼
+Repository (Spring Data JPA) → persistencia, incluidas queries JPQL propias
+   │
+   ▼
+MySQL (dev) / PostgreSQL (prod, pendiente)
+```
 
-5) Obtener la lista de productos de una determinada venta
-    - Métodos HTTP: GET
-    - Endpoint:
-        - localhost:8080/ventas/productos/{codigo_venta}
+```
+src/main/java/com/mdev/bazar
+├── config          # configuración transversal (CORS)
+├── controller       # capa REST — solo DTOs y ResponseEntity
+├── dto
+│   ├── request        # contratos de entrada (records, con validación)
+│   └── response         # contratos de salida (records)
+├── mapper             # Entity ⇄ DTO
+├── model
+├── repository         # Spring Data JPA + queries JPQL propias
+└── service
+    └── impl
+```
 
-6) Obtener la sumatoria del monto y también cantidad total de ventas de un determinado día
-    - Métodos HTTP: GET
-    - Endpoint:
-        - localhost:8080/ventas/{fecha_venta}
+Un `Service` puede invocar a **otro Service** (nunca al repository de otro dominio
+directamente) cuando necesita datos que no le pertenecen — por ejemplo, `SaleService`
+le pide productos a `ProductService` y clientes a `ClientService` al armar una venta,
+en vez de acceder a sus repositories.
 
-7) Obtener el codigo_venta, el total, la cantidad de productos, el nombre del cliente y el apellido del cliente de la venta con el monto más alto de todas.
-    - Métodos HTTP: GET
-    - Endpoint:
-        - localhost:8080/ventas/mayor_venta
+## Modelo de datos
 
-- Nota: Tener en cuenta patrón DTO para este escenario
+**Product**
 
-8) BONUS (OPCIONAL)
-    - Se considera bonus cualquier propuesta de end-point, mejora, agregado de clase, etc que se proponga e implemente.
-    - Este apartado es opcional y pretende dejar volar la creatividad a la hora de proponer qué otras necesidades/requerimientos podrían existir en este escenario.
-    - En caso de llevar a cabo este punto, especificar en un documento el/los nuevo/s requerimientos planteados y sus correspondientes especificaciones técnicas (método HTTP, endpoint, etc). Tomar como ejemplo de plantilla para la especificación a las consignas de este enunciado.
+| Campo | Tipo | Notas |
+|---|---|---|
+| `productCode` | `Long` | autogenerado (`SEQUENCE`) |
+| `name` | `String` | obligatorio |
+| `brand` | `String` | obligatorio |
+| `price` | `Double` | ≥ 0 |
+| `stock` | `Double` | sin validación de mínimo todavía (ver Next To-Do) |
 
+**Client**
 
-#### Formato de Entrega
-Se recomienda plasmar el proyecto Final mediante un repositorio de GitHub simulando una entrega. Cada participante del curso creará su repositorio remoto y subirá allí su proyecto. Es importante incluir TODOS LOS ARCHIVOS del proyecto, para asegurar la correcta ejecución del mismo.
+| Campo | Tipo | Notas |
+|---|---|---|
+| `clientId` | `Long` | autogenerado (`SEQUENCE`) |
+| `name` | `String` | obligatorio |
+| `lastName` | `String` | obligatorio |
+| `dni` | `String` | obligatorio |
 
-Al mismo tiempo, incluir la colección de Postman utilizada para realizar las pruebas (esto puede incluirse en un link de descarga dentro del README de Github o en un archivo adjunto dentro del proyecto, como se prefiera). Recordar que la entrega de este TP Final es una SIMULACIÓN de cómo es posible presentar el código de un proyecto desarrollado mediante el uso de repositorios. No habrá un docente o especialista que valide la entrega. Simplemente se sugiere la misma como una forma de poner en práctica lo aprendido durante el curso.
+**Sale**
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `saleId` | `Long` | autogenerado (`SEQUENCE`) |
+| `saleDate` | `LocalDate` | asignada por el servidor al crear |
+| `amount` | `Double` | calculado como la suma de los subtotales de sus `SaleItem` |
+| `saleItems` | `List<SaleItem>` | `@OneToMany`, cascada completa |
+| `client` | `Client` | `@ManyToOne` — muchas ventas pueden pertenecer al mismo cliente |
+
+**SaleItem** _(entidad agregada, no pedida explícitamente por la consigna)_
+
+Representa cada línea de una venta — necesaria porque la relación Venta↔Producto no es
+un simple muchos-a-muchos: cada línea tiene sus propios datos (cantidad, precio al
+momento de la venta, subtotal), que no le pertenecen ni al producto ni a la venta en sí.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `saleItemId` | `Long` | autogenerado (`SEQUENCE`) |
+| `sale` | `Sale` | `@ManyToOne` |
+| `product` | `Product` | `@ManyToOne` |
+| `quantity` | `Double` | |
+| `unitPrice` | `Double` | |
+| `subtotal` | `Double` | |
+
+## Endpoints
+
+**Productos** — base path `/products`
+
+| Método | Ruta | Descripción | Éxito | Errores |
+|---|---|---|---|---|
+| `POST` | `/create` | Crea un producto | `201 Created` | `400 Bad Request` |
+| `GET` | `/{id}` | Obtiene un producto por código | `200 OK` | `404 Not Found` |
+| `GET` | `` | Lista todos los productos | `200 OK` | — |
+| `PATCH` | `/update/{id}` | Actualiza parcialmente un producto | `200 OK` | `400`, `404` |
+| `DELETE` | `/delete/{id}` | Elimina un producto | `204 No Content` | — |
+| `GET` | `/low_stock` | Productos con stock por debajo del umbral | `200 OK` | — |
+
+**Clientes** — base path `/clients`
+
+| Método | Ruta | Descripción | Éxito | Errores |
+|---|---|---|---|---|
+| `POST` | `/create` | Crea un cliente | `201 Created` | `400 Bad Request` |
+| `GET` | `/{id}` | Obtiene un cliente por id | `200 OK` | `404 Not Found` |
+| `GET` | `` | Lista todos los clientes | `200 OK` | — |
+| `PATCH` | `/update/{id}` | Actualiza parcialmente un cliente | `200 OK` | `400`, `404` |
+| `DELETE` | `/delete/{id}` | Elimina un cliente | `204 No Content` | — |
+
+**Ventas** — base path `/sales`
+
+| Método | Ruta | Descripción | Éxito | Errores |
+|---|---|---|---|---|
+| `POST` | `/create` | Registra una venta (con sus líneas de producto) | `201 Created` | `400 Bad Request` |
+| `GET` | `/{id}` | Obtiene una venta por código | `200 OK` | `404 Not Found` |
+| `GET` | `` | Lista todas las ventas | `200 OK` | — |
+| `GET` | `/products/{saleId}` | Productos que componen una venta puntual | `200 OK` | — |
+| `GET` | `/amount/{saleDate}` | Monto total vendido en una fecha | `200 OK` | — |
+| `GET` | `/highest` | Datos de la venta con el monto más alto | `200 OK` | — |
+
+> Todavía no hay edición ni eliminación de ventas — se van a implementar directamente
+> como borrado lógico (ver [Next To-Do](#next-to-do)), no como `DELETE` físico.
+
+<details>
+<summary><strong>Ejemplo — registrar una venta</strong></summary>
+
+`POST /sales/create`
+
+```json
+{
+  "clientId": 1,
+  "saleItems": [
+    { "productCode": 1, "quantity": 2, "unitPrice": 500.0, "subtotal": 1000.0 }
+  ]
+}
+```
+
+`201 Created`
+
+```json
+{
+  "saleId": 4,
+  "saleDate": "2026-09-17",
+  "amount": 1000.0,
+  "saleItems": [
+    { "saleItemId": 7, "saleId": 4, "productId": 1, "quantity": 2.0, "unitPrice": 500.0, "subtotal": 1000.0 }
+  ],
+  "clientId": 1
+}
+```
+
+</details>
+
+<details>
+<summary><strong>Ejemplo — venta con el monto más alto</strong></summary>
+
+`GET /sales/highest`
+
+```json
+{
+  "saleId": 3,
+  "total": 17599.56,
+  "productQuantity": 1,
+  "clientName": "Cliente1",
+  "clientLastName": "Prueba1"
+}
+```
+
+</details>
+
+## Cómo correrlo en local
+
+Por ahora, sin Docker (pendiente, ver [Next To-Do](#next-to-do)).
+
+**Prerrequisitos**: JDK 25, Maven, MySQL corriendo en `localhost:3306`.
+
+```bash
+# 1. Crear la base de datos
+mysql -u root -p -e "CREATE DATABASE todocode_bazar;"
+
+# 2. Configurar credenciales (ver sección Configuración)
+
+# 3. Levantar la aplicación
+cd bazar
+./mvnw spring-boot:run
+```
+
+Arranca con el perfil `dev` (MySQL) por defecto — ver la sección siguiente.
+
+## Perfiles y bases de datos
+
+Mismo esquema que Ferretería: **dos motores de base de datos**, según el perfil de
+Spring activo (`spring.profiles.active`), sin cambios de código entre uno y otro:
+
+| Perfil | Motor | Uso previsto | `ddl-auto` |
+|---|---|---|---|
+| `dev` (default) | MySQL | Desarrollo local | `update` |
+| `prod` | PostgreSQL | Despliegue (todavía no realizado) | `validate` |
+
+Ambos drivers JDBC (`mysql-connector-j` y `postgresql`) conviven en el `pom.xml` sin
+conflicto — Spring Boot resuelve cuál usar según el prefijo de la URL de conexión.
+
+## Configuración
+
+`application.properties` no contiene secretos: cada valor sensible se lee primero de
+una variable de entorno y cae a un default de desarrollo si no la encuentra
+(`${VARIABLE:default}`).
+
+| Propiedad | Variable de entorno | Default (perfil `dev`) |
+|---|---|---|
+| `spring.profiles.active` | `SPRING_PROFILES_ACTIVE` | `dev` |
+| `spring.datasource.url` | `DB_URL` | `jdbc:mysql://localhost:3306/todocode_bazar...` |
+| `spring.datasource.username` | `DB_USERNAME` | `root` |
+| `spring.datasource.password` | `DB_PASSWORD` | *(vacío)* |
+| `app.cors.allowed-origins` | `CORS_ALLOWED_ORIGINS` | `http://localhost:5500,http://127.0.0.1:5500,https://mdev-repos.github.io` |
+
+El perfil `prod` no define defaults para estas variables a propósito: si falta alguna,
+la aplicación falla al arrancar en vez de conectarse silenciosamente a un lugar
+equivocado.
+
+## Proyecto relacionado
+
+Frontend de práctica (vanilla HTML/CSS/JS) que consume esta API:
+[`front_bazar__curso_todocode`](../front_bazar__curso_todocode).
+Gestiona las tres entidades por pestañas (Productos, Clientes, Ventas) más una de
+Reportes para las tres consultas específicas, y detecta solo desde dónde se lo sirve
+para elegir el backend correspondiente — mismo mecanismo que el front de Ferretería:
+
+- **En local**: clonar el repo del front y levantarlo con un servidor estático propio
+  junto con esta API corriendo en la misma máquina → consume el backend local
+  automáticamente.
+- **https://mdev-repos.github.io/front_bazar__curso_todocode/**: apuntaría al backend
+  deployado en producción — **todavía no existe** (el backend de este proyecto no fue
+  deployado aún), así que por ahora esa URL pública no va a poder cargar datos.
+
+## Next To-Do
+
+- [x] CRUD completo de Producto, Cliente y Venta, con arquitectura en capas
+- [x] Entidad `SaleItem` agregada por decisión de modelado (relación muchos-a-muchos con datos propios)
+- [x] DTOs con `record` + validación (Jakarta Bean Validation)
+- [x] `ResponseEntity` con status codes semánticamente correctos
+- [x] CORS configurado por ambiente
+- [x] Perfiles `dev` (MySQL) / `prod` (PostgreSQL) preparados
+- [x] Consultas JPQL propias (bajo stock, productos por venta, monto por fecha, venta más alta)
+- [x] Front de consumo propio (Productos/Clientes/Ventas/Reportes), publicado en GitHub Pages
+- [ ] Modificación de la lógica de eliminado — pasar de `DELETE` físico a borrado lógico (estados) en todos los recursos, incluyendo edición/baja de ventas
+- [ ] Manejador de excepciones centralizado (`@ControllerAdvice`) con excepciones propias
+- [ ] Validación de stock disponible antes de registrar una venta (usando el manejador de excepciones de arriba)
+- [ ] Dockerización (`Dockerfile` + `docker-compose.yml`)
+- [ ] Deploy del backend (Render + PostgreSQL gestionado) y actualización de la URL real en el front
+- [ ] Refactor con programación funcional
+- [ ] Spring Security (autenticación/autorización)
+- [ ] Tests unitarios e de integración
+
+## Autor
+
+**Matías Mazzitelli**
+_Backend Developer — Java / Spring Boot_
+
+[GitHub] https://github.com/mdev-repos · [LinkedIn] https://www.linkedin.com/in/mnm-dev

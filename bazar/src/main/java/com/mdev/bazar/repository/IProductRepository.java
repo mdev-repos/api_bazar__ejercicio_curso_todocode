@@ -12,5 +12,4 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
     // Low Stock Product (5 or less Stock)
     @Query("SELECT p FROM Product p WHERE p.stock <= 5")
     List<Product> findLowStockProducts();
-
 }

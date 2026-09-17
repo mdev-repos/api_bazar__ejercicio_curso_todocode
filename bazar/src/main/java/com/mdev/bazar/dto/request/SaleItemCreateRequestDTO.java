@@ -8,5 +8,4 @@ public record SaleItemCreateRequestDTO(
         @Positive Double quantity,
         @Positive Double unitPrice,
         @Positive Double subtotal
-) {
-}
+) {}

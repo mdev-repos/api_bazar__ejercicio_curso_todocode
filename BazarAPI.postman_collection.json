@@ -1,0 +1,396 @@
+{
+  "info": {
+    "_postman_id": "9be141bc-b9ba-4cf3-9e9b-dca51f314d77",
+    "name": "BazarAPI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "34834363"
+  },
+  "item": [
+    {
+      "name": "Clients",
+      "item": [
+        {
+          "name": "createClient",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Matias\",\n    \"lastName\": \"Nicolas\",\n    \"dni\": \"88777999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/clients/create",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "clients",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAllClients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/clients",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "clients"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getClientById",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/clients/2",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "clients",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updateClient",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"lastName\": \"Apellido\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/clients/update/2",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "clients",
+                "update",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "deleteClient",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/clients/delete/3",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "clients",
+                "delete",
+                "3"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Product",
+      "item": [
+        {
+          "name": "createProduct",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Lavandina\",\n    \"brand\": \"Ayudin\",\n    \"price\": 500.00,\n    \"stock\": 55.00\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/products/create",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "products",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAllProducts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/products",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "products"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getProductById",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/products/3",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "products",
+                "3"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updateProduct",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"brand\": \"modificado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/products/update/2",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "products",
+                "update",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "deleteProduct",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/products/delete/2",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "products",
+                "delete",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "lowStock",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/products/low_stock",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "products",
+                "low_stock"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sale",
+      "item": [
+        {
+          "name": "createSale",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"saleItems\": [\n        {\n            \"productCode\": 3,\n            \"quantity\": 5.0,\n            \"unitPrice\": 1320.0,\n            \"subtotal\": 6600.0\n        },\n        {\n            \"productCode\": 1,\n            \"quantity\": 7.0,\n            \"unitPrice\": 500.0,\n            \"subtotal\": 3500.0\n        },\n        {\n            \"productCode\": 4,\n            \"quantity\": 1.0,\n            \"unitPrice\": 160.0,\n            \"subtotal\": 160.0\n        }\n    ],\n    \"clientId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/sales/create",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "sales",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAllSales",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/sales",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "sales"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getSaleById",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/sales/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "sales",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getProductListBySaleId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/sales/products/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "sales",
+                "products",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getTotalAmountBySaleDate",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/sales/amount/2026-09-17",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "sales",
+                "amount",
+                "2026-09-17"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getHighestSaleData",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/sales/highest",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "sales",
+                "highest"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

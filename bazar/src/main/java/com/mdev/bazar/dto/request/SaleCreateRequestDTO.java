@@ -7,4 +7,4 @@ import java.util.List;
 public record SaleCreateRequestDTO(
         @NotNull List<SaleItemCreateRequestDTO> saleItems,
         @NotNull Long clientId
-        ) {}
+) {}

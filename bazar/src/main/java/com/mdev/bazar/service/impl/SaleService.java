@@ -3,6 +3,8 @@ package com.mdev.bazar.service.impl;
 import com.mdev.bazar.dto.request.ProductUpdateRequestDTO;
 import com.mdev.bazar.dto.request.SaleCreateRequestDTO;
 import com.mdev.bazar.dto.request.SaleItemCreateRequestDTO;
+import com.mdev.bazar.dto.response.HighestSaleResponseDTO;
+import com.mdev.bazar.dto.response.ProductResponseDTO;
 import com.mdev.bazar.dto.response.SaleResponseDTO;
 import com.mdev.bazar.mapper.SaleMapper;
 import com.mdev.bazar.model.Client;
@@ -39,62 +41,47 @@ public class SaleService implements ISaleService {
 
     @Override
     public SaleResponseDTO createSale(SaleCreateRequestDTO dto) {
-        // Sale instance
         Sale sale = new Sale();
+        Sale saved = saleRepo.save(sale);
 
-        // Sale Date
-        sale.setSaleDate(LocalDate.now());
+        saved.setSaleDate(LocalDate.now());
 
-        // Sale Amount
         Double total = 0.0;
-
-        // Sale Items Instance
         List<SaleItem> saleItems = new ArrayList<>();
 
-        // dtoSaleItems --> saleItems
         for(SaleItemCreateRequestDTO saleItemDto : dto.saleItems()){
             SaleItem saleItem = new SaleItem();
-            saleItem.setSale(sale);
+            saleItem.setSale(saved);
 
-            // Get Product from DDBB
             Product product = productServ.getProduct(saleItemDto.productCode());
 
-            // Incorporate to the Sale Item
             saleItem.setProduct(product);
 
-            // Set the rest of the values
             saleItem.setQuantity(saleItemDto.quantity());
             saleItem.setUnitPrice(saleItemDto.unitPrice());
             saleItem.setSubtotal(saleItemDto.subtotal());
 
-            // ADD subtotal to the Ammount
             total += saleItemDto.subtotal();
 
-            // Created the Sale Item into the DDBB
             SaleItem created = saleItemServ.createSaleItem(saleItem);
 
-            // Add the created Sale Item to the SaleItems instance
             saleItems.add(created);
 
-            // Product Stock
             product.setStock(product.getStock() - saleItem.getQuantity());
             ProductUpdateRequestDTO requestDto = new ProductUpdateRequestDTO(null, null, null, product.getStock());
             productServ.updateProduct(product.getProductCode(), requestDto);
         }
 
-        // Set the SaleItems list to the Sale
-        sale.setSaleItems(saleItems);
+        saved.setSaleItems(saleItems);
 
-        // Set Sale Amount
-        sale.setAmount(total);
+        saved.setAmount(total);
 
-        // Get Client from the DDBB and set it to the Sale
         Client client = clientServ.getClient(dto.clientId());
-        sale.setClient(client);
+        saved.setClient(client);
 
-        Sale saved = saleRepo.save(sale);
+        Sale updated = saleRepo.save(saved);
 
-        return SaleMapper.toResponseDTO(saved);
+        return SaleMapper.toResponseDTO(updated);
     }
 
     @Override
@@ -108,5 +95,20 @@ public class SaleService implements ISaleService {
     public List<SaleResponseDTO> getAllSales() {
         List<Sale> sales = saleRepo.findAll();
         return SaleMapper.toResponseDTOList(sales);
+    }
+
+    @Override
+    public List<ProductResponseDTO> getSaleProductsBySaleId(Long saleId) {
+        return saleItemServ.getSaleProductsBySaleId(saleId);
+    }
+
+    @Override
+    public Double getSalesAmountByDate(LocalDate saleDate) {
+        return saleRepo.findSalesAmountByDate(saleDate);
+    }
+
+    @Override
+    public HighestSaleResponseDTO getHighestSaleData() {
+        return SaleMapper.toHighestSaleDTO(saleRepo.findHighestSale());
     }
 }

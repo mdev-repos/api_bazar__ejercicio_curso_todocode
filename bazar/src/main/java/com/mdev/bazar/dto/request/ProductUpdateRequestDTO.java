@@ -5,5 +5,4 @@ public record ProductUpdateRequestDTO(
         String brand,
         Double price,
         Double stock
-) {
-}
+) {}

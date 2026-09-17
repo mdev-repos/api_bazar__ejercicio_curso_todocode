@@ -6,5 +6,4 @@ public record ProductResponseDTO(
         String brand,
         Double price,
         Double stock
-) {
-}
+) {}
