@@ -3,6 +3,7 @@ package com.mdev.bazar.service.impl;
 import com.mdev.bazar.dto.request.ClientCreateRequestDTO;
 import com.mdev.bazar.dto.request.ClientUpdateRequestDTO;
 import com.mdev.bazar.dto.response.ClientResponseDTO;
+import com.mdev.bazar.exception.ResourceNotFoundException;
 import com.mdev.bazar.mapper.ClientMapper;
 import com.mdev.bazar.model.Client;
 import com.mdev.bazar.repository.IClientRepository;
@@ -29,21 +30,20 @@ public class ClientService implements IClientService {
 
     @Override
     public ClientResponseDTO getClientById(Long id) {
-        Client client = clientRepo.findById(id).orElse(null);
-        if(client == null) return null;
+        Client client = clientRepo.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Cliente no encontrado con el ID: " + id));
         return ClientMapper.toResponseDTO(client);
     }
 
     @Override
     public List<ClientResponseDTO> getAllClients() {
-        List<Client> clients = clientRepo.findAll();
-        return ClientMapper.toResponseDTOList(clients);
+        return ClientMapper.toResponseDTOList(clientRepo.findAll());
     }
 
     @Override
     public ClientResponseDTO updateClient(Long id, ClientUpdateRequestDTO dto) {
-        Client client = clientRepo.findById(id).orElse(null);
-        if(client == null) return null;
+        Client client = clientRepo.findById(id)
+                        .orElseThrow(()-> new ResourceNotFoundException("Cliente no encontrado con el ID: " + id));
         ClientMapper.applyClientUpdate(client, dto);
         Client updated = clientRepo.save(client);
         return ClientMapper.toResponseDTO(updated);
@@ -51,11 +51,15 @@ public class ClientService implements IClientService {
 
     @Override
     public void deleteClient(Long id) {
-        clientRepo.deleteById(id);
+        Client search = clientRepo.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Cliente no encontrado con el ID: " + id));
+
+        clientRepo.delete(search);
     }
 
     @Override
     public Client getClient(Long id) {
-        return clientRepo.findById(id).orElse(null);
+        return clientRepo.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Cliente no encontrado con el ID: " + id));
     }
 }

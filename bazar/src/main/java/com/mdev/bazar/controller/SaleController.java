@@ -31,36 +31,30 @@ public class SaleController {
 
     @GetMapping("/{id}")
     public ResponseEntity<SaleResponseDTO> getSaleById(@PathVariable Long id){
-        SaleResponseDTO sale = saleServ.getSaleById(id);
-        if(sale == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(sale);
+        return ResponseEntity.ok(saleServ.getSaleById(id));
     }
 
     @GetMapping()
     public ResponseEntity<List<SaleResponseDTO>> getAllSales(){
-        List<SaleResponseDTO> sales = saleServ.getAllSales();
-        return ResponseEntity.ok(sales);
+        return ResponseEntity.ok(saleServ.getAllSales());
     }
 
     // Extra EndPoints
     // Get a Sale products by Sale Id
     @GetMapping("/products/{saleId}")
     public ResponseEntity<List<ProductResponseDTO>> getSaleProductsBySaleId(@PathVariable Long saleId){
-        List<ProductResponseDTO> saleProducsList = saleServ.getSaleProductsBySaleId(saleId);
-        return ResponseEntity.ok(saleProducsList);
+        return ResponseEntity.ok(saleServ.getSaleProductsBySaleId(saleId));
     }
 
     // Get total Amount from Sales by Sales Date
     @GetMapping("/amount/{saleDate}")
     public ResponseEntity<Double> getSalesAmountByDate(@PathVariable LocalDate saleDate){
-        Double totalBySaleDate = saleServ.getSalesAmountByDate(saleDate);
-        return ResponseEntity.ok(totalBySaleDate);
+        return ResponseEntity.ok(saleServ.getSalesAmountByDate(saleDate));
     }
 
     // Get specific data from the Highest Sale in DDBB
     @GetMapping("/highest")
     public ResponseEntity<HighestSaleResponseDTO> getHighestSaleData(){
-        HighestSaleResponseDTO highest = saleServ.getHighestSaleData();
-        return ResponseEntity.ok(highest);
+        return ResponseEntity.ok(saleServ.getHighestSaleData());
     }
 }

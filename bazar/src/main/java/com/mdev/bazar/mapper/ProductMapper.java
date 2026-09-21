@@ -30,13 +30,9 @@ public class ProductMapper {
     }
 
     public static List<ProductResponseDTO> toResponseDTOList(List<Product> productList){
-        List<ProductResponseDTO> dtoList = new ArrayList<>();
-
-        for(Product product : productList){
-            dtoList.add(toResponseDTO(product));
-        }
-
-        return dtoList;
+        return productList.stream()
+                .map(ProductMapper::toResponseDTO)
+                .toList();
     }
 
     public static void applyProductUpdate(Product product, ProductUpdateRequestDTO dto){

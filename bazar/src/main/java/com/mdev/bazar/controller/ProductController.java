@@ -29,22 +29,17 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id){
-        ProductResponseDTO product = productServ.getProductById(id);
-        if(product == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(product);
+        return ResponseEntity.ok(productServ.getProductById(id));
     }
 
     @GetMapping()
     public ResponseEntity<List<ProductResponseDTO>> getAllProducts(){
-        List<ProductResponseDTO> productList = productServ.getAllProducts();
-        return ResponseEntity.ok(productList);
+        return ResponseEntity.ok(productServ.getAllProducts());
     }
 
     @PatchMapping("/update/{id}")
     public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductUpdateRequestDTO dto){
-        ProductResponseDTO updated = productServ.updateProduct(id, dto);
-        if(updated == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(productServ.updateProduct(id, dto));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -55,7 +50,6 @@ public class ProductController {
 
     @GetMapping("/low_stock")
     public ResponseEntity<List<ProductResponseDTO>> getLowStockProducts(){
-        List<ProductResponseDTO> lowStockList = productServ.getLowStockProducts();
-        return ResponseEntity.ok(lowStockList);
+        return ResponseEntity.ok(productServ.getLowStockProducts());
     }
 }

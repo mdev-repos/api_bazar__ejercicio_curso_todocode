@@ -16,12 +16,14 @@ la relación muchos-a-muchos con datos propios (cantidad, precio unitario, subto
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4-brightgreen?logo=springboot&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-build-C71A36?logo=apachemaven&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-prod%20(pendiente)-336791?logo=postgresql&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-prod-336791?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![Error Handling](https://img.shields.io/badge/Error%20Handling-RFC%207807-blueviolet)
 ![Status](https://img.shields.io/badge/status-en%20desarrollo-yellow)
 
 **🖥️ Front (GitHub Pages)**: https://mdev-repos.github.io/front_bazar__curso_todocode/
 _(el backend todavía corre solo en local — hasta que se complete el deploy, el front
-público va a mostrar error de conexión; ver [Next To-Do](#next-to-do))_
+público va a mostrar error de conexión; ver [Roadmap](#roadmap))_
 
 ---
 
@@ -36,7 +38,7 @@ público va a mostrar error de conexión; ver [Next To-Do](#next-to-do))_
 - [Perfiles y bases de datos](#perfiles-y-bases-de-datos)
 - [Configuración](#configuración)
 - [Proyecto relacionado](#proyecto-relacionado)
-- [Next To-Do](#next-to-do)
+- [Roadmap](#roadmap)
 - [Autor](#autor)
 
 ---
@@ -60,8 +62,9 @@ de la venta con el monto más alto).
 | Lenguaje | Java 25 |
 | Framework | Spring Boot 4 (Spring Web, Spring Data JPA) |
 | ORM | Hibernate |
-| Base de datos | MySQL (desarrollo) · PostgreSQL (preparado para producción, deploy pendiente) |
+| Base de datos | MySQL (desarrollo) · PostgreSQL (producción) |
 | Validación | Jakarta Bean Validation |
+| Manejo de errores | `ProblemDetail` (RFC 7807) + `@RestControllerAdvice` centralizado |
 | Build | Maven |
 | Reducción de boilerplate | Lombok |
 
@@ -78,16 +81,21 @@ Cliente (JSON)
 Controller        → recibe/devuelve DTOs, gestiona status codes (ResponseEntity)
    │
    ▼
-Service            → lógica de negocio, orquesta Mapper + Repository (y otros Services)
+Service            → lógica de negocio (Streams), orquesta Mapper + Repository (y otros Services)
    │
-   ├─▶ Mapper       → traduce Entity ⇄ DTO
+   ├─▶ Mapper       → traduce Entity ⇄ DTO (con Streams para las colecciones)
    │
    ▼
 Repository (Spring Data JPA) → persistencia, incluidas queries JPQL propias
    │
    ▼
-MySQL (dev) / PostgreSQL (prod, pendiente)
+MySQL (dev) / PostgreSQL (prod)
 ```
+
+Cualquier excepción lanzada en Service o Repository es interceptada por un
+`GlobalExceptionHandler` (`@RestControllerAdvice`) que la traduce a una respuesta
+`ProblemDetail` (RFC 7807) con el status code correspondiente — el Controller
+nunca maneja errores directamente.
 
 ```
 src/main/java/com/mdev/bazar
@@ -96,6 +104,7 @@ src/main/java/com/mdev/bazar
 ├── dto
 │   ├── request        # contratos de entrada (records, con validación)
 │   └── response         # contratos de salida (records)
+├── exception          # excepciones de negocio + GlobalExceptionHandler
 ├── mapper             # Entity ⇄ DTO
 ├── model
 ├── repository         # Spring Data JPA + queries JPQL propias
@@ -106,7 +115,11 @@ src/main/java/com/mdev/bazar
 Un `Service` puede invocar a **otro Service** (nunca al repository de otro dominio
 directamente) cuando necesita datos que no le pertenecen — por ejemplo, `SaleService`
 le pide productos a `ProductService` y clientes a `ClientService` al armar una venta,
-en vez de acceder a sus repositories.
+en vez de acceder a sus repositories. `SaleService.createSale` valida cliente y stock
+por completo **antes** de persistir nada (fail-fast) y arma toda la venta en memoria
+para guardarla en una única operación (`cascade = CascadeType.ALL` en `Sale.saleItems`),
+todo dentro de una transacción (`@Transactional`) que garantiza rollback total si algo
+falla a mitad de camino.
 
 ## Modelo de datos
 
@@ -118,7 +131,7 @@ en vez de acceder a sus repositories.
 | `name` | `String` | obligatorio |
 | `brand` | `String` | obligatorio |
 | `price` | `Double` | ≥ 0 |
-| `stock` | `Double` | sin validación de mínimo todavía (ver Next To-Do) |
+| `stock` | `Double` | validado contra el pedido de venta con `InsufficientStockException` |
 
 **Client**
 
@@ -189,7 +202,7 @@ momento de la venta, subtotal), que no le pertenecen ni al producto ni a la vent
 | `GET` | `/highest` | Datos de la venta con el monto más alto | `200 OK` | — |
 
 > Todavía no hay edición ni eliminación de ventas — se van a implementar directamente
-> como borrado lógico (ver [Next To-Do](#next-to-do)), no como `DELETE` físico.
+> como borrado lógico (ver [Roadmap](#roadmap)), no como `DELETE` físico.
 
 <details>
 <summary><strong>Ejemplo — registrar una venta</strong></summary>
@@ -238,9 +251,55 @@ momento de la venta, subtotal), que no le pertenecen ni al producto ni a la vent
 
 </details>
 
+<details>
+<summary><strong>Ejemplo — stock insuficiente</strong></summary>
+
+`POST /sales/create`
+
+```json
+{
+  "clientId": 1,
+  "saleItems": [
+    { "productCode": 1, "quantity": 999999, "unitPrice": 500.0, "subtotal": 999999.0 }
+  ]
+}
+```
+
+`409 Conflict`
+
+```json
+{
+  "type": "about:blank",
+  "title": "Conflict",
+  "status": 409,
+  "detail": "No hay suficiente Stock del producto con el codigo 1 (Producto de prueba) para la venta solicitada.",
+  "instance": "/sales/create"
+}
+```
+
+Todos los errores de la API (validación, recurso no encontrado, stock insuficiente,
+JSON malformado, etc.) siguen el formato estándar
+[`ProblemDetail`](https://www.rfc-editor.org/rfc/rfc7807) — mismo contrato de error en
+toda la aplicación. La validación de stock se hace **antes** de persistir la venta: si
+falla, no queda ningún registro a medio guardar en la base.
+
+</details>
+
 ## Cómo correrlo en local
 
-Por ahora, sin Docker (pendiente, ver [Next To-Do](#next-to-do)).
+### Opción A — Docker Compose (recomendado)
+
+**Prerrequisitos**: Docker.
+
+```bash
+cd bazar
+DB_PASSWORD=tu_password docker compose up -d --build
+```
+
+Levanta la API **y** su base de datos (MySQL) juntas, con las variables de entorno ya
+resueltas. La API queda disponible en `http://localhost:8080`.
+
+### Opción B — manual, sin Docker
 
 **Prerrequisitos**: JDK 25, Maven, MySQL corriendo en `localhost:3306`.
 
@@ -255,7 +314,7 @@ cd bazar
 ./mvnw spring-boot:run
 ```
 
-Arranca con el perfil `dev` (MySQL) por defecto — ver la sección siguiente.
+Ambas opciones arrancan con el perfil `dev` (MySQL) por defecto — ver la sección siguiente.
 
 ## Perfiles y bases de datos
 
@@ -264,11 +323,24 @@ Spring activo (`spring.profiles.active`), sin cambios de código entre uno y otr
 
 | Perfil | Motor | Uso previsto | `ddl-auto` |
 |---|---|---|---|
-| `dev` (default) | MySQL | Desarrollo local | `update` |
-| `prod` | PostgreSQL | Despliegue (todavía no realizado) | `validate` |
+| `dev` (default) | MySQL | Desarrollo local, con o sin Docker | `update` |
+| `prod` | PostgreSQL | Despliegue | `validate` |
 
 Ambos drivers JDBC (`mysql-connector-j` y `postgresql`) conviven en el `pom.xml` sin
 conflicto — Spring Boot resuelve cuál usar según el prefijo de la URL de conexión.
+
+La base de producción corre en **[Neon](https://neon.tech)** (Postgres serverless,
+tier gratuito) en vez de la Postgres gestionada de Render — Render permite múltiples
+web services gratis por cuenta, pero solo una base Postgres gratuita, y esa expira a
+los 30 días si no se pasa a plan pago. Como Ferretería ya usa esa Postgres de Render,
+Bazar usa Neon para no competir por el mismo recurso limitado.
+
+La URL de conexión de Neon requiere SSL siempre — el `DB_URL` de producción necesita
+el parámetro `?sslmode=require` al final:
+
+```
+DB_URL=jdbc:postgresql://<host>.neon.tech/todocode_bazar?sslmode=require
+```
 
 ## Configuración
 
@@ -303,23 +375,23 @@ para elegir el backend correspondiente — mismo mecanismo que el front de Ferre
   deployado en producción — **todavía no existe** (el backend de este proyecto no fue
   deployado aún), así que por ahora esa URL pública no va a poder cargar datos.
 
-## Next To-Do
+## Roadmap
 
 - [x] CRUD completo de Producto, Cliente y Venta, con arquitectura en capas
 - [x] Entidad `SaleItem` agregada por decisión de modelado (relación muchos-a-muchos con datos propios)
 - [x] DTOs con `record` + validación (Jakarta Bean Validation)
 - [x] `ResponseEntity` con status codes semánticamente correctos
 - [x] CORS configurado por ambiente
-- [x] Perfiles `dev` (MySQL) / `prod` (PostgreSQL) preparados
+- [x] Perfiles `dev` (MySQL) / `prod` (PostgreSQL)
 - [x] Consultas JPQL propias (bajo stock, productos por venta, monto por fecha, venta más alta)
 - [x] Front de consumo propio (Productos/Clientes/Ventas/Reportes), publicado en GitHub Pages
+- [x] Manejo centralizado de excepciones (`@ControllerAdvice` + `ProblemDetail`)
+- [x] Validación de stock disponible antes de registrar una venta (`InsufficientStockException`)
+- [x] Refactor de `SaleService.createSale` — validación fail-fast, transacción atómica (`@Transactional`), persistencia única vía cascade
+- [x] Refactor con programación funcional (Streams en mappers y consultas de colecciones)
+- [x] Dockerización (`Dockerfile` + `docker-compose.yml`)
 - [ ] Modificación de la lógica de eliminado — pasar de `DELETE` físico a borrado lógico (estados) en todos los recursos, incluyendo edición/baja de ventas
-- [ ] Manejador de excepciones centralizado (`@ControllerAdvice`) con excepciones propias
-- [ ] Validación de stock disponible antes de registrar una venta (usando el manejador de excepciones de arriba)
-- [ ] Dockerización (`Dockerfile` + `docker-compose.yml`)
-- [ ] Deploy del backend (Render + PostgreSQL gestionado) y actualización de la URL real en el front
-- [ ] Refactor con programación funcional
-- [ ] Spring Security (autenticación/autorización)
+- [ ] Deploy del backend (Render + PostgreSQL gestionada externamente) y actualización de la URL real en el front
 - [ ] Tests unitarios e de integración
 
 ## Autor

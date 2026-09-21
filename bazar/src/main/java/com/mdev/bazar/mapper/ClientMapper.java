@@ -27,11 +27,9 @@ public class ClientMapper {
     }
 
     public static List<ClientResponseDTO> toResponseDTOList(List<Client> clientList){
-        List<ClientResponseDTO> dtoList = new ArrayList<>();
-        for(Client cli : clientList){
-            dtoList.add(toResponseDTO(cli));
-        }
-        return dtoList;
+        return clientList.stream()
+                .map(ClientMapper::toResponseDTO)
+                .toList();
     }
 
     public static void applyClientUpdate(Client client, ClientUpdateRequestDTO dto){

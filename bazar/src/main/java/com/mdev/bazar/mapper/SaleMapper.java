@@ -20,11 +20,9 @@ public class SaleMapper {
     }
 
     public static List<SaleResponseDTO> toResponseDTOList(List<Sale> salesList){
-        List<SaleResponseDTO> dtoList = new ArrayList<>();
-        for(Sale sale : salesList){
-            dtoList.add(toResponseDTO(sale));
-        }
-        return dtoList;
+        return salesList.stream()
+                .map(SaleMapper::toResponseDTO)
+                .toList();
     }
 
     public static HighestSaleResponseDTO toHighestSaleDTO(Sale sale){

@@ -1,5 +1,6 @@
 package com.mdev.bazar.mapper;
 
+import com.mdev.bazar.dto.request.SaleItemCreateRequestDTO;
 import com.mdev.bazar.dto.response.SaleItemResponseDTO;
 import com.mdev.bazar.model.SaleItem;
 
@@ -19,10 +20,8 @@ public class SaleItemMapper {
     }
 
     public static List<SaleItemResponseDTO> toResponseDTOList(List<SaleItem> saleItems){
-        List<SaleItemResponseDTO> saleItemResponseDTOList = new ArrayList<>();
-        for(SaleItem item : saleItems){
-            saleItemResponseDTOList.add(toResponseDTO(item));
-        }
-        return saleItemResponseDTOList;
+        return saleItems.stream()
+                .map(SaleItemMapper::toResponseDTO)
+                .toList();
     }
 }

@@ -29,31 +29,23 @@ public class ClientController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ClientResponseDTO> getClientById(@PathVariable Long id){
-        ClientResponseDTO client = clientServ.getClientById(id);
-        if(client == null)  return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok(client);
+        return ResponseEntity.ok(clientServ.getClientById(id));
     }
 
     @GetMapping
     public ResponseEntity<List<ClientResponseDTO>> getAllClients(){
-        List<ClientResponseDTO> clients = clientServ.getAllClients();
-        return ResponseEntity.ok(clients);
+        return ResponseEntity.ok(clientServ.getAllClients());
     }
 
     @PatchMapping("/update/{id}")
     public ResponseEntity<ClientResponseDTO> updateClient(@PathVariable Long id,
                                                           @Valid @RequestBody ClientUpdateRequestDTO dto){
-        ClientResponseDTO updated = clientServ.updateClient(id, dto);
-        if(updated == null)  return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(clientServ.updateClient(id, dto));
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteClient(@PathVariable Long id){
         clientServ.deleteClient(id);
-
         return ResponseEntity.noContent().build();
     }
 }

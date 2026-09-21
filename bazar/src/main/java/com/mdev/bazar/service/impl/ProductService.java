@@ -3,6 +3,7 @@ package com.mdev.bazar.service.impl;
 import com.mdev.bazar.dto.request.ProductCreateRequestDTO;
 import com.mdev.bazar.dto.request.ProductUpdateRequestDTO;
 import com.mdev.bazar.dto.response.ProductResponseDTO;
+import com.mdev.bazar.exception.ResourceNotFoundException;
 import com.mdev.bazar.mapper.ProductMapper;
 import com.mdev.bazar.model.Product;
 import com.mdev.bazar.repository.IProductRepository;
@@ -28,21 +29,20 @@ public class ProductService implements IProductService {
 
     @Override
     public ProductResponseDTO getProductById(Long id) {
-        Product product = productRepo.findById(id).orElse(null);
-        if(product == null) return null;
+        Product product = productRepo.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Producto no encontrado con el ID: " + id));
         return ProductMapper.toResponseDTO(product);
     }
 
     @Override
     public List<ProductResponseDTO> getAllProducts() {
-        List<Product> productList = productRepo.findAll();
-        return ProductMapper.toResponseDTOList(productList);
+        return ProductMapper.toResponseDTOList(productRepo.findAll());
     }
 
     @Override
     public ProductResponseDTO updateProduct(Long id, ProductUpdateRequestDTO dto) {
-        Product product = productRepo.findById(id).orElse(null);
-        if(product == null) return null;
+        Product product = productRepo.findById(id)
+                        .orElseThrow(()-> new ResourceNotFoundException("Producto no encontrado con el ID: " + id));
         ProductMapper.applyProductUpdate(product, dto);
         Product updated = productRepo.save(product);
         return ProductMapper.toResponseDTO(updated);
@@ -50,17 +50,19 @@ public class ProductService implements IProductService {
 
     @Override
     public void deleteProduct(Long id) {
-        productRepo.deleteById(id);
+        Product search = productRepo.findById(id)
+                        .orElseThrow(()-> new ResourceNotFoundException("Producto no encontrado con el ID: " + id));
+        productRepo.delete(search);
     }
 
     @Override
     public Product getProduct(Long id) {
-        return productRepo.findById(id).orElse(null);
+        return productRepo.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Producto no encontrado con el ID: " + id));
     }
 
     @Override
     public List<ProductResponseDTO> getLowStockProducts() {
-        List<Product> lowStockList = productRepo.findLowStockProducts();
-        return ProductMapper.toResponseDTOList(lowStockList);
+        return ProductMapper.toResponseDTOList(productRepo.findLowStockProducts());
     }
 }
