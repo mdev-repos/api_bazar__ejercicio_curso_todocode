@@ -19,11 +19,12 @@ la relación muchos-a-muchos con datos propios (cantidad, precio unitario, subto
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-prod-336791?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![Error Handling](https://img.shields.io/badge/Error%20Handling-RFC%207807-blueviolet)
-![Status](https://img.shields.io/badge/status-en%20desarrollo-yellow)
+![Status](https://img.shields.io/badge/status-deployado-brightgreen)
+
+**🚀 API en vivo**: https://api-bazar-ejercicio-curso-todocode.onrender.com
+_(plan gratuito de Render — la primera petición tras un rato sin tráfico puede tardar ~30-50s en responder mientras la instancia "despierta")_
 
 **🖥️ Front (GitHub Pages)**: https://mdev-repos.github.io/front_bazar__curso_todocode/
-_(el backend todavía corre solo en local — hasta que se complete el deploy, el front
-público va a mostrar error de conexión; ver [Roadmap](#roadmap))_
 
 ---
 
@@ -283,6 +284,11 @@ JSON malformado, etc.) siguen el formato estándar
 toda la aplicación. La validación de stock se hace **antes** de persistir la venta: si
 falla, no queda ningún registro a medio guardar en la base.
 
+Las rutas inexistentes devuelven un `404 Not Found` real (no un `500`): el catch-all
+del `GlobalExceptionHandler` detecta cuando la excepción ya trae su propio status code
+(interfaz `ErrorResponse` de Spring, como `NoResourceFoundException`) y lo respeta, en
+vez de tratar cualquier excepción como un error interno genérico.
+
 </details>
 
 ## Cómo correrlo en local
@@ -371,9 +377,8 @@ para elegir el backend correspondiente — mismo mecanismo que el front de Ferre
 - **En local**: clonar el repo del front y levantarlo con un servidor estático propio
   junto con esta API corriendo en la misma máquina → consume el backend local
   automáticamente.
-- **https://mdev-repos.github.io/front_bazar__curso_todocode/**: apuntaría al backend
-  deployado en producción — **todavía no existe** (el backend de este proyecto no fue
-  deployado aún), así que por ahora esa URL pública no va a poder cargar datos.
+- **https://mdev-repos.github.io/front_bazar__curso_todocode/**: apunta al backend
+  ya deployado en producción (Render).
 
 ## Roadmap
 
@@ -390,8 +395,11 @@ para elegir el backend correspondiente — mismo mecanismo que el front de Ferre
 - [x] Refactor de `SaleService.createSale` — validación fail-fast, transacción atómica (`@Transactional`), persistencia única vía cascade
 - [x] Refactor con programación funcional (Streams en mappers y consultas de colecciones)
 - [x] Dockerización (`Dockerfile` + `docker-compose.yml`)
+- [x] Base de datos de producción en Neon (PostgreSQL serverless)
+- [x] Deploy del backend en Render
+- [x] Manejo de errores afinado — rutas inexistentes devuelven `404` real, no `500`
+- [x] Mensajes de validación en español
 - [ ] Modificación de la lógica de eliminado — pasar de `DELETE` físico a borrado lógico (estados) en todos los recursos, incluyendo edición/baja de ventas
-- [ ] Deploy del backend (Render + PostgreSQL gestionada externamente) y actualización de la URL real en el front
 - [ ] Tests unitarios e de integración
 
 ## Autor

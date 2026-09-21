@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -59,6 +60,15 @@ public class GlobalExceptionHandler {
     // Catch-All
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception ex) {
+        // Excepciones propias de Spring (ej. NoResourceFoundException cuando una ruta
+        // no existe) ya implementan la interfaz ErrorResponse y traen su propio status
+        // code correcto (404, etc.) en getBody(). Sin este chequeo, el catch-all las
+        // trataba igual que cualquier Exception y las devolvia como 500 -- un 404 real
+        // terminaba pareciendo un error de servidor.
+        if (ex instanceof ErrorResponse errorResponse) {
+            return errorResponse.getBody();
+        }
+
         log.error("Error inesperado no controlado", ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Ocurrió un error inesperado");
     }

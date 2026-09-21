@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record ProductCreateRequestDTO(
-        @NotBlank String name,
-        @NotBlank String brand,
-        @PositiveOrZero Double price,
-        @PositiveOrZero Double stock
+        @NotBlank(message = "no debe estar vacío") String name,
+        @NotBlank(message = "no debe estar vacío") String brand,
+        @PositiveOrZero(message = "debe ser mayor que o igual a 0") Double price,
+        @PositiveOrZero(message = "debe ser mayor que o igual a 0") Double stock
 ) {}

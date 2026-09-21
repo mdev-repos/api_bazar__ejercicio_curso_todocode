@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record SaleItemCreateRequestDTO(
-        @NotNull Long productCode,
-        @Positive Double quantity,
-        @Positive Double unitPrice,
-        @Positive Double subtotal
+        @NotNull(message = "no debe ser nulo") Long productCode,
+        @Positive(message = "debe ser mayor que 0") Double quantity,
+        @Positive(message = "debe ser mayor que 0") Double unitPrice,
+        @Positive(message = "debe ser mayor que 0") Double subtotal
 ) {}
