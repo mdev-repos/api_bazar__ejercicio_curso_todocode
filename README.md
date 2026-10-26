@@ -1,16 +1,18 @@
-# 🧺 Bazar API
+<div align="center">
+  <img src="./assets/bazar-icon.svg" width="120" alt="Bazar API" />
 
-API REST para la gestión de ventas de un bazar — productos, clientes y ventas, con
+  # Bazar API
+</div>
+
+API REST para la gestión de ventas de un bazar - productos, clientes y ventas, con
 consultas específicas de negocio (bajo stock, productos por venta, monto por fecha,
 venta más alta). Construida con **Spring Boot** siguiendo una arquitectura en capas
 (Controller → Service → Repository) con separación estricta entre entidades de
 persistencia y contrato de API mediante **DTOs**.
 
-Proyecto ancla del roadmap: da un salto de complejidad respecto a
-[Ferretería](../api_ferreteria__prueba_tecnica_todocode) (una sola entidad) — acá son
-**tres entidades relacionadas entre sí** (Producto, Cliente, Venta), más una cuarta
-(`SaleItem`) agregada por decisión propia de modelado para representar correctamente
-la relación muchos-a-muchos con datos propios (cantidad, precio unitario, subtotal).
+El modelo tiene **tres entidades relacionadas entre sí** (Producto, Cliente, Venta), más una
+cuarta (`SaleItem`) agregada por decisión de modelado para representar correctamente la
+relación muchos-a-muchos con datos propios (cantidad, precio unitario, subtotal).
 
 ![Java](https://img.shields.io/badge/Java-25-orange?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4-brightgreen?logo=springboot&logoColor=white)
@@ -22,14 +24,37 @@ la relación muchos-a-muchos con datos propios (cantidad, precio unitario, subto
 ![Status](https://img.shields.io/badge/status-deployado-brightgreen)
 
 **🚀 API en vivo**: https://api-bazar-ejercicio-curso-todocode.onrender.com
-_(plan gratuito de Render — la primera petición tras un rato sin tráfico puede tardar ~30-50s en responder mientras la instancia "despierta")_
+_(plan gratuito de Render - la primera petición tras un rato sin tráfico puede tardar ~30-50s en responder mientras la instancia "despierta")_
 
 **🖥️ Front (GitHub Pages)**: https://mdev-repos.github.io/front_bazar__curso_todocode/
 
 ---
 
+## Probarlo sin instalar nada
+
+Abrí el **[front](https://mdev-repos.github.io/front_bazar__curso_todocode/)**: se conecta solo a la API
+publicada y permite usar todo lo que ofrece:
+
+- **Productos**: alta, edición, baja, listado y filtro de bajo stock.
+- **Clientes**: alta, edición, baja y listado.
+- **Ventas**: registrar una venta con varios productos (el subtotal se calcula en vivo), listarlas y ver
+  los productos de cada una.
+- **Reportes**: monto total vendido en una fecha y venta con el monto más alto.
+
+Un **semáforo** en la cabecera muestra el estado del servidor: como corre en un plan gratuito, se
+duerme tras un rato sin uso y la primera conexión puede tardar hasta un minuto. El front le avisa apenas
+se abre la página para que vaya despertando mientras recorrés la pantalla, y mantiene bloqueados los
+botones que necesitan al servidor hasta que la luz esté en verde (podés ir completando los campos
+mientras tanto). Es una demo compartida: lo que cargues lo puede ver cualquier visitante.
+
+También se puede consumir la API directamente (ver [Endpoints](#endpoints)) o levantar todo en tu
+máquina (ver [Cómo correrlo en local](#cómo-correrlo-en-local)).
+
+---
+
 ## Índice
 
+- [Probarlo sin instalar nada](#probarlo-sin-instalar-nada)
 - [Contexto del ejercicio](#contexto-del-ejercicio)
 - [Stack técnico](#stack-técnico)
 - [Arquitectura](#arquitectura)
@@ -38,15 +63,15 @@ _(plan gratuito de Render — la primera petición tras un rato sin tráfico pue
 - [Cómo correrlo en local](#cómo-correrlo-en-local)
 - [Perfiles y bases de datos](#perfiles-y-bases-de-datos)
 - [Configuración](#configuración)
-- [Proyecto relacionado](#proyecto-relacionado)
-- [Roadmap](#roadmap)
+- [Front](#front)
+- [Qué incluye](#qué-incluye)
 - [Autor](#autor)
 
 ---
 
 ## Contexto del ejercicio
 
-> TP Integrador Final — TodoCode Academy
+> Ejercicio integrador final | TodoCode Academy
 
 Un bazar necesita una API REST que le permita registrar sus ventas y administrar el
 stock de sus productos, para ser consumida tanto desde una futura app web como desde
@@ -72,7 +97,7 @@ de la venta con el monto más alto).
 ## Arquitectura
 
 Arquitectura en capas, con **DTOs (`record`) + Mapper** como frontera entre el
-contrato público de la API y el modelo de persistencia — las entidades JPA nunca se
+contrato público de la API y el modelo de persistencia - las entidades JPA nunca se
 exponen directamente en request ni response.
 
 ```
@@ -95,13 +120,13 @@ MySQL (dev) / PostgreSQL (prod)
 
 Cualquier excepción lanzada en Service o Repository es interceptada por un
 `GlobalExceptionHandler` (`@RestControllerAdvice`) que la traduce a una respuesta
-`ProblemDetail` (RFC 7807) con el status code correspondiente — el Controller
+`ProblemDetail` (RFC 7807) con el status code correspondiente - el Controller
 nunca maneja errores directamente.
 
 ```
 src/main/java/com/mdev/bazar
 ├── config          # configuración transversal (CORS)
-├── controller       # capa REST — solo DTOs y ResponseEntity
+├── controller       # capa REST - solo DTOs y ResponseEntity
 ├── dto
 │   ├── request        # contratos de entrada (records, con validación)
 │   └── response         # contratos de salida (records)
@@ -114,7 +139,7 @@ src/main/java/com/mdev/bazar
 ```
 
 Un `Service` puede invocar a **otro Service** (nunca al repository de otro dominio
-directamente) cuando necesita datos que no le pertenecen — por ejemplo, `SaleService`
+directamente) cuando necesita datos que no le pertenecen - por ejemplo, `SaleService`
 le pide productos a `ProductService` y clientes a `ClientService` al armar una venta,
 en vez de acceder a sus repositories. `SaleService.createSale` valida cliente y stock
 por completo **antes** de persistir nada (fail-fast) y arma toda la venta en memoria
@@ -151,11 +176,11 @@ falla a mitad de camino.
 | `saleDate` | `LocalDate` | asignada por el servidor al crear |
 | `amount` | `Double` | calculado como la suma de los subtotales de sus `SaleItem` |
 | `saleItems` | `List<SaleItem>` | `@OneToMany`, cascada completa |
-| `client` | `Client` | `@ManyToOne` — muchas ventas pueden pertenecer al mismo cliente |
+| `client` | `Client` | `@ManyToOne` - muchas ventas pueden pertenecer al mismo cliente |
 
 **SaleItem** _(entidad agregada, no pedida explícitamente por la consigna)_
 
-Representa cada línea de una venta — necesaria porque la relación Venta↔Producto no es
+Representa cada línea de una venta - necesaria porque la relación Venta↔Producto no es
 un simple muchos-a-muchos: cada línea tiene sus propios datos (cantidad, precio al
 momento de la venta, subtotal), que no le pertenecen ni al producto ni a la venta en sí.
 
@@ -170,43 +195,42 @@ momento de la venta, subtotal), que no le pertenecen ni al producto ni a la vent
 
 ## Endpoints
 
-**Productos** — base path `/products`
+**Productos** - base path `/products`
 
 | Método | Ruta | Descripción | Éxito | Errores |
 |---|---|---|---|---|
 | `POST` | `/create` | Crea un producto | `201 Created` | `400 Bad Request` |
 | `GET` | `/{id}` | Obtiene un producto por código | `200 OK` | `404 Not Found` |
-| `GET` | `` | Lista todos los productos | `200 OK` | — |
+| `GET` | `` | Lista todos los productos | `200 OK` | - |
 | `PATCH` | `/update/{id}` | Actualiza parcialmente un producto | `200 OK` | `400`, `404` |
-| `DELETE` | `/delete/{id}` | Elimina un producto | `204 No Content` | — |
-| `GET` | `/low_stock` | Productos con stock por debajo del umbral | `200 OK` | — |
+| `DELETE` | `/delete/{id}` | Elimina un producto | `204 No Content` | - |
+| `GET` | `/low_stock` | Productos con stock por debajo del umbral | `200 OK` | - |
 
-**Clientes** — base path `/clients`
+**Clientes** - base path `/clients`
 
 | Método | Ruta | Descripción | Éxito | Errores |
 |---|---|---|---|---|
 | `POST` | `/create` | Crea un cliente | `201 Created` | `400 Bad Request` |
 | `GET` | `/{id}` | Obtiene un cliente por id | `200 OK` | `404 Not Found` |
-| `GET` | `` | Lista todos los clientes | `200 OK` | — |
+| `GET` | `` | Lista todos los clientes | `200 OK` | - |
 | `PATCH` | `/update/{id}` | Actualiza parcialmente un cliente | `200 OK` | `400`, `404` |
-| `DELETE` | `/delete/{id}` | Elimina un cliente | `204 No Content` | — |
+| `DELETE` | `/delete/{id}` | Elimina un cliente | `204 No Content` | - |
 
-**Ventas** — base path `/sales`
+**Ventas** - base path `/sales`
 
 | Método | Ruta | Descripción | Éxito | Errores |
 |---|---|---|---|---|
 | `POST` | `/create` | Registra una venta (con sus líneas de producto) | `201 Created` | `400 Bad Request` |
 | `GET` | `/{id}` | Obtiene una venta por código | `200 OK` | `404 Not Found` |
-| `GET` | `` | Lista todas las ventas | `200 OK` | — |
-| `GET` | `/products/{saleId}` | Productos que componen una venta puntual | `200 OK` | — |
-| `GET` | `/amount/{saleDate}` | Monto total vendido en una fecha | `200 OK` | — |
-| `GET` | `/highest` | Datos de la venta con el monto más alto | `200 OK` | — |
+| `GET` | `` | Lista todas las ventas | `200 OK` | - |
+| `GET` | `/products/{saleId}` | Productos que componen una venta puntual | `200 OK` | - |
+| `GET` | `/amount/{saleDate}` | Monto total vendido en una fecha | `200 OK` | - |
+| `GET` | `/highest` | Datos de la venta con el monto más alto | `200 OK` | - |
 
-> Todavía no hay edición ni eliminación de ventas — se van a implementar directamente
-> como borrado lógico (ver [Roadmap](#roadmap)), no como `DELETE` físico.
+> Por ahora las ventas no se pueden editar ni eliminar.
 
 <details>
-<summary><strong>Ejemplo — registrar una venta</strong></summary>
+<summary><strong>Ejemplo - registrar una venta</strong></summary>
 
 `POST /sales/create`
 
@@ -236,7 +260,7 @@ momento de la venta, subtotal), que no le pertenecen ni al producto ni a la vent
 </details>
 
 <details>
-<summary><strong>Ejemplo — venta con el monto más alto</strong></summary>
+<summary><strong>Ejemplo - venta con el monto más alto</strong></summary>
 
 `GET /sales/highest`
 
@@ -253,7 +277,7 @@ momento de la venta, subtotal), que no le pertenecen ni al producto ni a la vent
 </details>
 
 <details>
-<summary><strong>Ejemplo — stock insuficiente</strong></summary>
+<summary><strong>Ejemplo - stock insuficiente</strong></summary>
 
 `POST /sales/create`
 
@@ -280,7 +304,7 @@ momento de la venta, subtotal), que no le pertenecen ni al producto ni a la vent
 
 Todos los errores de la API (validación, recurso no encontrado, stock insuficiente,
 JSON malformado, etc.) siguen el formato estándar
-[`ProblemDetail`](https://www.rfc-editor.org/rfc/rfc7807) — mismo contrato de error en
+[`ProblemDetail`](https://www.rfc-editor.org/rfc/rfc7807) - mismo contrato de error en
 toda la aplicación. La validación de stock se hace **antes** de persistir la venta: si
 falla, no queda ningún registro a medio guardar en la base.
 
@@ -293,7 +317,7 @@ vez de tratar cualquier excepción como un error interno genérico.
 
 ## Cómo correrlo en local
 
-### Opción A — Docker Compose (recomendado)
+### Opción A - Docker Compose (recomendado)
 
 **Prerrequisitos**: Docker.
 
@@ -305,7 +329,7 @@ DB_PASSWORD=tu_password docker compose up -d --build
 Levanta la API **y** su base de datos (MySQL) juntas, con las variables de entorno ya
 resueltas. La API queda disponible en `http://localhost:8080`.
 
-### Opción B — manual, sin Docker
+### Opción B - manual, sin Docker
 
 **Prerrequisitos**: JDK 25, Maven, MySQL corriendo en `localhost:3306`.
 
@@ -320,12 +344,12 @@ cd bazar
 ./mvnw spring-boot:run
 ```
 
-Ambas opciones arrancan con el perfil `dev` (MySQL) por defecto — ver la sección siguiente.
+Ambas opciones arrancan con el perfil `dev` (MySQL) por defecto - ver la sección siguiente.
 
 ## Perfiles y bases de datos
 
-Mismo esquema que Ferretería: **dos motores de base de datos**, según el perfil de
-Spring activo (`spring.profiles.active`), sin cambios de código entre uno y otro:
+El proyecto corre sobre **dos motores de base de datos**, según el perfil de Spring activo
+(`spring.profiles.active`), sin cambios de código entre uno y otro:
 
 | Perfil | Motor | Uso previsto | `ddl-auto` |
 |---|---|---|---|
@@ -333,15 +357,11 @@ Spring activo (`spring.profiles.active`), sin cambios de código entre uno y otr
 | `prod` | PostgreSQL | Despliegue | `validate` |
 
 Ambos drivers JDBC (`mysql-connector-j` y `postgresql`) conviven en el `pom.xml` sin
-conflicto — Spring Boot resuelve cuál usar según el prefijo de la URL de conexión.
+conflicto - Spring Boot resuelve cuál usar según el prefijo de la URL de conexión.
 
-La base de producción corre en **[Neon](https://neon.tech)** (Postgres serverless,
-tier gratuito) en vez de la Postgres gestionada de Render — Render permite múltiples
-web services gratis por cuenta, pero solo una base Postgres gratuita, y esa expira a
-los 30 días si no se pasa a plan pago. Como Ferretería ya usa esa Postgres de Render,
-Bazar usa Neon para no competir por el mismo recurso limitado.
+La base de producción corre en **[Neon](https://neon.tech)** (Postgres serverless, plan gratuito).
 
-La URL de conexión de Neon requiere SSL siempre — el `DB_URL` de producción necesita
+La URL de conexión de Neon requiere SSL siempre - el `DB_URL` de producción necesita
 el parámetro `?sslmode=require` al final:
 
 ```
@@ -366,45 +386,36 @@ El perfil `prod` no define defaults para estas variables a propósito: si falta 
 la aplicación falla al arrancar en vez de conectarse silenciosamente a un lugar
 equivocado.
 
-## Proyecto relacionado
+## Front
 
-Frontend de práctica (vanilla HTML/CSS/JS) que consume esta API:
-[`front_bazar__curso_todocode`](../front_bazar__curso_todocode).
-Gestiona las tres entidades por pestañas (Productos, Clientes, Ventas) más una de
-Reportes para las tres consultas específicas, y detecta solo desde dónde se lo sirve
-para elegir el backend correspondiente — mismo mecanismo que el front de Ferretería:
+Interfaz web (vanilla HTML/CSS/JS) que consume esta API:
+[`front_bazar__curso_todocode`](https://github.com/mdev-repos/front_bazar__curso_todocode),
+publicada en **https://mdev-repos.github.io/front_bazar__curso_todocode/**.
 
-- **En local**: clonar el repo del front y levantarlo con un servidor estático propio
-  junto con esta API corriendo en la misma máquina → consume el backend local
-  automáticamente.
-- **https://mdev-repos.github.io/front_bazar__curso_todocode/**: apunta al backend
-  ya deployado en producción (Render).
+Detecta solo desde dónde se la sirve para elegir el backend: publicada en GitHub Pages usa la API de
+Render, y servida en `localhost` usa la API que corra en tu máquina (`http://localhost:8080`). Para
+levantar el front en local, ver su README.
 
-## Roadmap
+## Qué incluye
 
-- [x] CRUD completo de Producto, Cliente y Venta, con arquitectura en capas
-- [x] Entidad `SaleItem` agregada por decisión de modelado (relación muchos-a-muchos con datos propios)
-- [x] DTOs con `record` + validación (Jakarta Bean Validation)
-- [x] `ResponseEntity` con status codes semánticamente correctos
-- [x] CORS configurado por ambiente
-- [x] Perfiles `dev` (MySQL) / `prod` (PostgreSQL)
-- [x] Consultas JPQL propias (bajo stock, productos por venta, monto por fecha, venta más alta)
-- [x] Front de consumo propio (Productos/Clientes/Ventas/Reportes), publicado en GitHub Pages
-- [x] Manejo centralizado de excepciones (`@ControllerAdvice` + `ProblemDetail`)
-- [x] Validación de stock disponible antes de registrar una venta (`InsufficientStockException`)
-- [x] Refactor de `SaleService.createSale` — validación fail-fast, transacción atómica (`@Transactional`), persistencia única vía cascade
-- [x] Refactor con programación funcional (Streams en mappers y consultas de colecciones)
-- [x] Dockerización (`Dockerfile` + `docker-compose.yml`)
-- [x] Base de datos de producción en Neon (PostgreSQL serverless)
-- [x] Deploy del backend en Render
-- [x] Manejo de errores afinado — rutas inexistentes devuelven `404` real, no `500`
-- [x] Mensajes de validación en español
-- [ ] Modificación de la lógica de eliminado — pasar de `DELETE` físico a borrado lógico (estados) en todos los recursos, incluyendo edición/baja de ventas
-- [ ] Tests unitarios e de integración
+- CRUD completo de Producto y Cliente, y registro y consulta de Venta, con arquitectura en capas
+- Entidad `SaleItem` para la relación muchos-a-muchos con datos propios
+- DTOs con `record` y validación (Jakarta Bean Validation)
+- `ResponseEntity` con status codes semánticamente correctos
+- Manejo centralizado de excepciones (`@ControllerAdvice` + `ProblemDetail`); las rutas inexistentes devuelven `404`
+- Validación de stock disponible antes de registrar una venta (`InsufficientStockException`)
+- `SaleService.createSale` con validación fail-fast, transacción atómica (`@Transactional`) y persistencia única vía cascade
+- Streams en mappers y consultas de colecciones
+- Consultas JPQL propias (bajo stock, productos por venta, monto por fecha, venta más alta)
+- CORS configurado por ambiente
+- Perfiles `dev` (MySQL) y `prod` (PostgreSQL)
+- Dockerización (`Dockerfile` y `docker-compose.yml`)
+- Desplegada en Render, con la base en Neon
+- Front de consumo publicado en GitHub Pages
 
 ## Autor
 
 **Matías Mazzitelli**
-_Backend Developer — Java / Spring Boot_
+_Backend Developer - Java / Spring Boot_
 
 [GitHub] https://github.com/mdev-repos · [LinkedIn] https://www.linkedin.com/in/mnm-dev
